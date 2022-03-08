@@ -28,18 +28,19 @@ import flask
 from flask import Flask, request
 from flask_sockets import Sockets
 import gevent
-from gevent import queue
+from gevent import queue  #like async method in the same thread
 import time
 import json
 import os
 
 app = Flask(__name__)
-sockets = Sockets(app)
+sockets = Sockets(app)  #wrap the Flask app in a socket app
 app.debug = True
 
-clients = list()
+clients = list()  #make myself a list of client
 
 def send_all(msg):
+    # for each client I will put the message into the message queue
     for client in clients:
         client.put( msg )
 
@@ -51,10 +52,10 @@ class Client:
         self.queue = queue.Queue()
 
     def put(self, v):
-        self.queue.put_nowait(v)
+        self.queue.put_nowait(v)  # add message to the queue
 
     def get(self):
-        return self.queue.get()
+        return self.queue.get()  #get a message from th queue
 
 
 @app.route('/')
