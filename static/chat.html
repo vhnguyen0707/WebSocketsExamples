@@ -43,12 +43,12 @@ window.onload = function() {
     var host = window.location.host;
     var url = "ws://"+host+"/subscribe";   
     var socket = new WebSocket(url);
-    socket.onopen = function() {
+    socket.onopen = function() {  // don't have to do anything but it is a callback that I can fill in
     };
-    socket.onerror = function(msg) {
+    socket.onerror = function(msg) {  
         debug("WebSocket Error:" + msg.data);
     };
-    socket.onmessage = function(msg) {  
+    socket.onmessage = function(msg) {  // callback for when I receive message
         try {
             var message = JSON.parse(msg.data);
             addMessage(message["msg"]);
@@ -56,10 +56,10 @@ window.onload = function() {
             alert("socket on message: " + e);
         }
     }; 
-    messageInput.onkeyup = function(evt) {
+    messageInput.onkeyup = function(evt) {  //when I press enter
         if (evt.keyCode === 13) {
             socket.send( JSON.stringify( {"msg": messageInput.value } ) );
-            messageInput.value = "";
+            messageInput.value = ""; //stop doing it
             return evt.preventDefault();
         }
     };
@@ -71,7 +71,8 @@ window.onload = function() {
         var msgDiv = document.createElement("span");
         msgDiv.className = "msg";
         msgDiv.appendChild(new Text(msg));
-        queue.appendChild( msgDiv );
+        //queue.appendChild( msgDiv );
+        queue.insertBefore(msgDiv, queue.childNodes[0]); //insert it at the head of the queue
     };
 };
 </script>
