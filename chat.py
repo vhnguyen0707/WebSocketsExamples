@@ -50,7 +50,7 @@ def send_all_json(obj):
 class Client:
     def __init__(self):
         self.queue = queue.Queue()
-
+    # this queue is a blocking queue, it doesn't block when we add things to it, but it does when we get things
     def put(self, v):
         self.queue.put_nowait(v)  # add message to the queue
 
@@ -58,18 +58,20 @@ class Client:
         return self.queue.get()  #get a message from th queue
 
 
-@app.route('/')
+@app.route('/') #base route serves the base webpage
 def hello():
     return flask.redirect("/static/chat.html")
 
-
+# 2 threads: reading and writing
 def read_ws(ws,client):
     '''A greenlet function that reads from the websocket'''
+    # greenlet that runs concurrently with subscribe_socket thread
     try:
-        while True:
+        while True: # forever
             msg = ws.receive()
             print "WS RECV: %s" % msg
             if (msg is not None):
+                #json parse it if it is a real message
                 packet = json.loads(msg)
                 send_all_json( packet )
             else:
@@ -77,13 +79,14 @@ def read_ws(ws,client):
     except:
         '''Done'''
 
-@sockets.route('/subscribe')
+@sockets.route('/subscribe') # when we call /subscribe, this will start the websocket
 def subscribe_socket(ws):
+    # greenlet as well, and runs concurrently depends on how many connections you have
     client = Client()
     clients.append(client)
     g = gevent.spawn( read_ws, ws, client )    
     try:
-        while True:
+        while True: # sits and waits on the client for it to yield
             # block here
             msg = client.get()
             ws.send(msg)
